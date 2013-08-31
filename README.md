@@ -45,7 +45,7 @@ Anything that reads binary files. These are the benefits you'll win:
 <a name="diagrams"></a>
 __How it works?__
 
-To make the things easy there are 5 cases depending on the buffer position and the range of the bytes that you want to read. These cases only apply if the buffer size is smaller than the file size, otherwise the file is stored into memory, so only one i/o call is done.
+To make the things easier there are 5 cases depending on the buffer position and the range of the bytes that you want to read. These cases only apply if the buffer size is smaller than the file size, otherwise the file is stored into memory, so only one i/o call is done.
 
 Suppose a buffer size of 5 bytes (green background).  
 The pointer `p` is the cursor and it points to the first byte.  
@@ -75,3 +75,78 @@ Options:
 
 <a name="Reader"></a>
 __Reader__
+
+The Reader uses a fluent interface. The way to go is to chain the operations synchronously and, after all, close the file. They will be executed in order and asynchronously. If any error occurs an `error` event is fired, the pending operations are cancelled and the file is closed automatically.
+
+The `read()` and `seek()` functions receive a callback. This callback is executed after the current operation and before the next one. If you do any job inside this callback and it returns an error you should stop and close the reader because the next operations will be executed automatically. You cannot use `close()` because it is enqueued and awaits its turn. To stop the queue execution immediately you must use the `cancel()` function. The reader will be closed automatically. For example:
+
+```javascript
+var r = br.open ("...")
+		.on ("error", function (error){
+			console.error (error);
+		})
+		.on ("close", function (){
+			//doSomething() has failed so it cancels the reader and closes the file
+			//The second read is not executed
+			//Proceed with other tasks
+		})
+		.read (5, function (cb){
+			doSomething (function (error){
+				if (error){
+					console.error (error);
+					r.cancel ();
+				}else{
+					//Proceed with the next read
+					cb ();
+				}
+			})
+		})
+		.read (10, function (){
+			...
+		})
+		.close ();
+```
+
+__Methods__
+
+- [Reader#cancel() : undefined](#Reader_cancel)
+- [Reader#close() : Reader](#Reader_close)
+- [Reader#isEOF() : Boolean](#Reader_isEOF)
+- [Reader#read(bytes, callback) : Reader](#Reader_read)
+- [Reader#seek(position[, whence][, callback]) : Reader](#Reader_seek)
+- [Reader#size() : Number](#Reader_size)
+- [Reader#tell() : Number](#Reader_tell)
+
+<a name="Reader_cancel"></a>
+__Reader#cancel() : undefined__
+
+
+
+<a name="Reader_close"></a>
+__Reader#close() : Reader__
+
+
+
+<a name="Reader_isEOF"></a>
+__Reader#isEOF() : Boolean__
+
+
+
+<a name="Reader_read"></a>
+__Reader#read(bytes, callback) : Reader__
+
+
+
+<a name="Reader_seek"></a>
+__Reader#seek(position[, whence][, callback]) : Reader__
+
+
+
+<a name="Reader_size"></a>
+__Reader#size() : Number__
+
+
+
+<a name="Reader_tell"></a>
+__Reader#tell() : Number__
+
