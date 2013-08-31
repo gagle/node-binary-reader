@@ -121,7 +121,7 @@ var tests = {
 				.close ();
 	},
 	"case 4, multiple reads": function (done){
-		var r=br.open (file, small)
+		br.open (file, small)
 				.on ("error", assert.ifError)
 				.on ("close", function (){
 					assert.strictEqual (readCalls, 3);
@@ -135,6 +135,41 @@ var tests = {
 					assert.strictEqual (bytesRead, 12);
 					assert.deepEqual (buffer,
 							new Buffer ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]));
+				})
+				.close ();
+	},
+	"case 5": function (done){
+		br.open (file, small)
+				.on ("error", assert.ifError)
+				.on ("close", function (){
+					assert.strictEqual (readCalls, 3);
+					readCalls = 0;
+					done ();
+				})
+				.seek (3)
+				.read (3, function (){})
+				.seek (0)
+				.read (9, function (bytesRead, buffer){
+					assert.strictEqual (bytesRead, 9);
+					assert.deepEqual (buffer, new Buffer ([0, 1, 2, 3, 4, 5, 6, 7, 8]));
+				})
+				.close ();
+	},
+	"case 5, multiple calls": function (done){
+		br.open (file, { highWaterMark: 3 })
+				.on ("error", assert.ifError)
+				.on ("close", function (){
+					assert.strictEqual (readCalls, 5);
+					readCalls = 0;
+					done ();
+				})
+				.seek (6)
+				.read (3, function (){})
+				.seek (0)
+				.read (14, function (bytesRead, buffer){
+					assert.strictEqual (bytesRead, 14);
+					assert.deepEqual (buffer,
+							new Buffer ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]));
 				})
 				.close ();
 	}
