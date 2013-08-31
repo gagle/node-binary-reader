@@ -5,7 +5,7 @@ _Node.js project_
 
 #### Buffered binary reader with a fluent api ####
 
-Version: 0.0.1
+Version: 0.0.1, not yet!!!!!
 
 The BinaryReader is a wrapper around the `fs.read()` function. It has an internal buffer that maintains the last chunk of data read from disk, so it minimizes the number of i/o calls. If the requested data is already in the buffer it doesn't perform any i/o call and the data is copied from the buffer. It also implements a fluent interface for your ease.
 
@@ -62,7 +62,7 @@ For simplicity, the `x` group of bytes will be less than a buffer size so they c
 ---
 
 <a name="open"></a>
-___module_.open(path[, options]) : Reader) : EventEmitter__
+___module_.open(path[, options]) : Reader__
 
 Returns a new `Reader`.
 
