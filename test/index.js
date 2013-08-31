@@ -11,6 +11,20 @@ fs.read = function (){
 	readOriginal.apply (null, arguments);
 };
 
+var openOriginal = fs.open;
+var openCalls = 0;
+fs.open = function (){
+	openCalls++;
+	openOriginal.apply (null, arguments);
+};
+
+var closeOriginal = fs.close;
+var closeCalls = 0;
+fs.close = function (){
+	closeCalls++;
+	closeOriginal.apply (null, arguments);
+};
+
 var file = "file";
 var small = { highWaterMark: 5 };
 
@@ -170,6 +184,19 @@ var tests = {
 					assert.strictEqual (bytesRead, 14);
 					assert.deepEqual (buffer,
 							new Buffer ([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]));
+				})
+				.close ();
+	},
+	"open, close": function (done){
+		openCalls = 0;
+		closeCalls = 0;
+		br.open (file)
+				.on ("error", assert.ifError)
+				.on ("close", function (){
+					assert.strictEqual (openCalls, 0);
+					assert.strictEqual (readCalls, 0);
+					assert.strictEqual (closeCalls, 0);
+					done ();
 				})
 				.close ();
 	}
