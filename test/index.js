@@ -234,6 +234,15 @@ var tests = {
 					assert.fail ();
 				})
 				.close ();
+	},
+	"directory": function (done){
+		var r = br.open (".")
+				.on ("error", function (error){
+					assert.ok (error);
+				})
+				.on ("close", function (){})
+				.read (1, function (){})
+				.close ();
 	}
 };
 
