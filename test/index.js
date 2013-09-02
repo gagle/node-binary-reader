@@ -199,6 +199,41 @@ var tests = {
 					done ();
 				})
 				.close ();
+	},
+	"asynchronous callback": function (done){
+		var n = 0;
+		br.open (file)
+				.on ("error", assert.ifError)
+				.on ("close", done)
+				.read (1, function (bytesRead, buffer, cb){
+					process.nextTick (function (){
+						assert.strictEqual (n++, 0);
+						assert.deepEqual (buffer, new Buffer ([0]));
+						cb ();
+					});
+				})
+				.read (1, function (bytesRead, buffer){
+					assert.strictEqual (n, 1);
+					assert.deepEqual (buffer, new Buffer ([1]));
+				})
+				.close ();
+	},
+	"cancel": function (done){
+		var r = br.open (file)
+				.on ("error", assert.ifError)
+				.on ("close", function (){
+					assert.ok (true);
+					done ();
+				})
+				.read (1, function (bytesRead, buffer, cb){
+					process.nextTick (function (){
+						r.cancel ();
+					});
+				})
+				.read (1, function (bytesRead, buffer){
+					assert.fail ();
+				})
+				.close ();
 	}
 };
 
