@@ -36,8 +36,8 @@ __What are its uses?__
 Anything that reads binary files. These are the benefits you'll win:
 
 - Read big binary files without caring about how to retrieve the data and without implementing your own internal cursor system.
-- Avoids the callback nesting. It uses a very lightweight asynchronous control flow library: [deferred-queue](https://github.com/gagle/node-deferred-queue).
-- Eases the error handling.
+- Avoid the callback nesting. It uses a very lightweight asynchronous control flow library: [deferred-queue](https://github.com/gagle/node-deferred-queue).
+- Ease the error handling.
 - It is lazy! Delays the open and read calls until they are necessary, ie. `br.open(file).close()` does nothing.
 
 ---
