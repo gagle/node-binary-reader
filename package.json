@@ -3,14 +3,8 @@
 	"version": "0.0.1",
 	"description": "Buffered binary reader with a fluent api",
 	"keywords": ["buffer", "reader", "binary", "file", "seek"],
-	"author": {
-		"name": "Gabriel Llamas",
-		"email": "gagle@outlook.com"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git://github.com/gagle/node-binary-reader.git"
-	},
+	"author": "Gabriel Llamas <gagle@outlook.com>",
+	"repository": "git://github.com/gagle/node-binary-reader.git",
 	"engines": {
 		"node": ">=0.10"
 	},
