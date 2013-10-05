@@ -1,6 +1,6 @@
 {
 	"name": "binary-reader",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "Buffered binary reader with a fluent api",
 	"keywords": ["buffer", "reader", "binary", "file", "seek"],
 	"author": "Gabriel Llamas <gagle@outlook.com>",
