@@ -5,7 +5,7 @@ _Node.js project_
 
 #### Buffered binary reader with a fluent api ####
 
-Version: 0.0.2
+Version: 0.1.0
 
 The BinaryReader is a wrapper around the `fs.read()` function. It has an internal buffer that maintains the last chunk of data read from disk, so it minimizes the number of i/o calls. If the requested data is already in the buffer it doesn't perform any i/o call and the data is copied from the buffer. It also implements a fluent interface for your ease.
 
@@ -78,50 +78,35 @@ __Reader__
 
 The Reader uses a fluent interface. The way to go is to chain the operations synchronously and, after all, close the file. They will be executed in order and asynchronously. If any error occurs an `error` event is fired, the pending operations are cancelled and the file is closed automatically.
 
-The `read()` and `seek()` functions receive a callback. This callback is executed after the current operation and before the next one. If you do any job inside this callback and it returns an error you should stop and close the reader because the next operations will be executed automatically. You cannot use `close()` because it is enqueued and awaits its turn. To stop the queue execution immediately you must use the `cancel()` function. The reader will be closed automatically. For example:
+The `read()` and `seek()` functions receive a callback. This callback is executed after the current operation and before the next one. If you call any asynchronous function inside the callback, and this function fails, pass the error to the `cb` parameter and it will be forwarded and emitted by the `error` event. For example:
 
 ```javascript
-var r = br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			//doSomething() has failed so it cancels the reader and closes the file
-			//The second read is not executed
-			//Proceed with other tasks
-		})
-		.read (5, function (bytesRead, buffer, cb){
-			doSomething (function (error){
-				if (error){
-					console.error (error);
-					r.cancel ();
-					//Do NOT call to cb()
-				}else{
-					//Proceed with the next read
-					cb ();
-				}
-			})
-		})
-		.read (10, function (){
-			...
-		})
-		.close ();
+br.open (file)
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      //Never executed because a task has failed
+    })
+    .read (5, function (bytesRead, buffer, cb){
+      process.nextTick (function (){
+        cb (new Error ());
+      });
+    })
+    .read (10, function (){
+      //Never executed
+    })
+    .close ();
 ```
 
 __Methods__
 
-- [Reader#cancel() : undefined](#Reader_cancel)
 - [Reader#close() : Reader](#Reader_close)
 - [Reader#isEOF() : Boolean](#Reader_isEOF)
 - [Reader#read(bytes, callback) : Reader](#Reader_read)
 - [Reader#seek(position[, whence][, callback]) : Reader](#Reader_seek)
 - [Reader#size() : Number](#Reader_size)
 - [Reader#tell() : Number](#Reader_tell)
-
-<a name="Reader_cancel"></a>
-__Reader#cancel() : undefined__
-
-Stops the reader immediately, that is, this operation is not deferred, it executes and cancels all the pending operation. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
 
 <a name="Reader_close"></a>
 __Reader#close() : Reader__

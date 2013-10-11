@@ -218,27 +218,11 @@ var tests = {
 				})
 				.close ();
 	},
-	"cancel": function (done){
-		var r = br.open (file)
-				.on ("error", assert.ifError)
-				.on ("close", function (){
-					assert.ok (true);
-					done ();
-				})
-				.read (1, function (bytesRead, buffer, cb){
-					process.nextTick (function (){
-						r.cancel ();
-					});
-				})
-				.read (1, function (bytesRead, buffer){
-					assert.fail ();
-				})
-				.close ();
-	},
 	"directory": function (done){
 		var r = br.open (".")
 				.on ("error", function (error){
 					assert.ok (error);
+					done ();
 				})
 				.on ("close", function (){})
 				.read (1, function (){})
