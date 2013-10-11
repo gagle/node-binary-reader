@@ -82,30 +82,30 @@ The `read()` and `seek()` functions receive a callback. This callback is execute
 
 ```javascript
 var r = br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			//doSomething() has failed so it cancels the reader and closes the file
-			//The second read is not executed
-			//Proceed with other tasks
-		})
-		.read (5, function (bytesRead, buffer, cb){
-			doSomething (function (error){
-				if (error){
-					console.error (error);
-					r.cancel ();
-					//Do NOT call to cb()
-				}else{
-					//Proceed with the next read
-					cb ();
-				}
-			})
-		})
-		.read (10, function (){
-			...
-		})
-		.close ();
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      //doSomething() has failed so it cancels the reader and closes the file
+      //The second read is not executed
+      //Proceed with other tasks
+    })
+    .read (5, function (bytesRead, buffer, cb){
+      doSomething (function (error){
+        if (error){
+          console.error (error);
+          r.cancel ();
+          //Do NOT call to cb()
+        }else{
+          //Proceed with the next read
+          cb ();
+        }
+      })
+    })
+    .read (10, function (){
+      ...
+    })
+    .close ();
 ```
 
 __Methods__
@@ -134,14 +134,14 @@ In the following example the close operation is executed after the read operatio
 
 ```javascript
 br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			...
-		})
-		.read (1, function (){ ... })
-		.close ();
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      ...
+    })
+    .read (1, function (){ ... })
+    .close ();
 ```
 
 <a name="Reader_isEOF"></a>
@@ -153,17 +153,17 @@ In this example the cursor is moved to the last byte and reads it, so now the cu
 
 ```javascript
 var r = br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			...
-		})
-		.seek (0, { end: true })
-		.read (1, function (){
-			console.log (r.isEOF ()); //true
-		})
-		.close ();
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      ...
+    })
+    .seek (0, { end: true })
+    .read (1, function (){
+      console.log (r.isEOF ()); //true
+    })
+    .close ();
 ```
 
 <a name="Reader_read"></a>
@@ -178,23 +178,18 @@ The callback receives a third parameter, a callback that must be called if you c
 For example:
 
 ```javascript
-var foo = function (cb){
-	process.nextTick (cb);
-};
-
 br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			...
-		}))
-		.read (1, function (bytesRead, buffer, cb){
-			//foo is asynchronous, you must call to cb() when it finishes
-			foo (cb);
-		})
-		.read (1, function (){ ... })
-		.close ();
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      ...
+    }))
+    .read (1, function (bytesRead, buffer, cb){
+      process.nextTick (cb);
+    })
+    .read (1, function (){ ... })
+    .close ();
 ```
 
 <a name="Reader_seek"></a>
