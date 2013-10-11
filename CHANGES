@@ -1,6 +1,5 @@
 v0.1.0 (11 Oct 2013)
-	Removed "cancel()".
-	Updated deferred-queue dependency usage.
+	Bump version.
 
 v0.0.2 (05 Oct 2013)
 	Updated deferred-queue dependency usage.
