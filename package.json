@@ -9,7 +9,8 @@
 		"node": ">=0.10"
 	},
 	"dependencies": {
-		"deferred-queue": "*"
+		"deferred-queue": "*",
+		"error-maker": "*"
 	},
 	"devDependencies": {
 		"hex": "*"
