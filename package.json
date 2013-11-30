@@ -9,11 +9,13 @@
 		"node": ">=0.10"
 	},
 	"dependencies": {
-		"deferred-queue": "*",
-		"error-maker": "*"
+		"deferred-queue": "*"
 	},
 	"devDependencies": {
 		"hex": "*"
+	},
+	"scripts": {
+		"test": "node test/index"
 	},
 	"license": "MIT",
 	"main": "lib"

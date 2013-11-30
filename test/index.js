@@ -25,7 +25,7 @@ fs.close = function (){
 	closeOriginal.apply (null, arguments);
 };
 
-var file = "file";
+var file = __dirname + "/file";
 var small = { highWaterMark: 5 };
 
 var tests = {

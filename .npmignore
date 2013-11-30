@@ -4,3 +4,4 @@ test
 diagram.png
 diagram.xml
 .npmignore
+.travis.yml
