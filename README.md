@@ -46,8 +46,8 @@ To make the things easier there are 5 cases depending on the buffer position and
 Suppose a buffer size of 5 bytes (green background).  
 The pointer `p` is the cursor and it points to the first byte.  
 The pointer `e` is the end and it points to the last byte.  
-The `x` bytes are not into memory. They need to be read from disk.  
-The `y` bytes are already into memory. No need to read them again.
+The `x` bytes are not in memory. They need to be read from disk.  
+The `y` bytes are already in memory. No need to read them again.
 
 For simplicity, the `x` group of bytes will be less than a buffer size so they can be read with a single i/o call. The binary reader takes cares of this and makes all the necessary calls to read all the `x` bytes.
 
