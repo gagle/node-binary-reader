@@ -117,7 +117,7 @@ __Methods__
 <a name="Reader_cancel"></a>
 __Reader#cancel() : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it executes and cancels all the pending operations. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
+Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending operations. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
 
 <a name="Reader_close"></a>
 __Reader#close() : Reader__
@@ -143,9 +143,9 @@ br.open (file)
 <a name="Reader_isEOF"></a>
 __Reader#isEOF() : Boolean__
 
-Checks whether the internal cursor has reached the end of the file. Subsequent reads returns 0 bytes read. This operation is not deferred, it executes immediately.
+Checks whether the internal cursor has reached the end of the file. Subsequent reads returns 0 bytes. This operation is not deferred, it's executed immediately.
 
-In this example the cursor is moved to the last byte and reads it, so now the cursor is at the end of the file.
+In this example the cursor is moved to the last byte to read it, so now the cursor is at the end of the file.
 
 ```javascript
 var r = br.open (file)
