@@ -117,7 +117,7 @@ __Methods__
 <a name="Reader_cancel"></a>
 __Reader#cancel() : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it executes and cancels all the pending operation. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
+Stops the reader immediately, that is, this operation is not deferred, it executes and cancels all the pending operations. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
 
 <a name="Reader_close"></a>
 __Reader#close() : Reader__
