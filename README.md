@@ -49,7 +49,7 @@ The pointer `e` is the end and it points to the last byte.
 The `x` bytes are not in memory. They need to be read from disk.  
 The `y` bytes are already in memory. No need to read them again.
 
-For simplicity, the `x` group of bytes will be less than a buffer size so they can be read with a single i/o call. The binary reader takes cares of this and makes all the necessary calls to read all the `x` bytes.
+For simplicity, the group of `x` bytes will be less than a buffer size so they can be read with a single i/o call. The binary reader takes cares of this and makes all the necessary calls to read all the `x` bytes.
 
 <p align="center">
   <img src="https://github.com/gagle/node-binary-reader/blob/master/diagram.png?raw=true"/>
