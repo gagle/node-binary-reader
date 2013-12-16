@@ -82,12 +82,12 @@ var r = br.open (file)
       console.error (error);
     })
     .on ("close", function (){
-      //doSomething() has failed so it cancels the reader and closes the file
+      //asyncWork() has failed so it cancels the reader and closes the file
       //The second read is not executed
       //Proceed with other tasks
     })
     .read (5, function (bytesRead, buffer, cb){
-      doSomething (function (error){
+      asyncWork (function (error){
         if (error){
           console.error (error);
           r.cancel ();
@@ -117,14 +117,14 @@ __Methods__
 <a name="Reader_cancel"></a>
 __Reader#cancel() : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending operations. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
+Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
 
 <a name="Reader_close"></a>
 __Reader#close() : Reader__
 
 Closes the reader.
 
-This operation is deferred, it's enqueued to the pending operation's list.
+This operation is deferred, it's enqueued in the list of pending tasks.
 
 In the following example the close operation is executed after the read operation, so the reader first reads 1 byte and then closes.
 
@@ -167,7 +167,7 @@ __Reader#read(bytes, callback) : Reader__
 
 Reads bytes and the cursor is automatically moved forward. The callback receives the number of bytes that has been read and the buffer with the raw data. The buffer is not a view, you can alter the content. 
 
-This operation is deferred, it's enqueued to the pending operation's list.
+This operation is deferred, it's enqueued in the list of pending tasks.
 
 The callback receives a third parameter, a callback that must be called if you call to any asynchronous code between deferred operations.
 
@@ -192,6 +192,8 @@ br.open (file)
 __Reader#seek(position[, whence][, callback]) : Reader__
 
 Moves the cursor along the file.
+
+This operation is deferred, it's enqueued in the list of pending tasks.
 
 The `whence` parameters is used to tell the reader from where it must move the cursor, it's the reference point. It has 3 options: `start`, `current`, `end`.
 
