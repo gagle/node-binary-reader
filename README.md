@@ -1,5 +1,5 @@
 binary-reader
-============
+=============
 
 #### Buffered binary reader with a fluent api ####
 
