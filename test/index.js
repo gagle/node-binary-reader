@@ -26,6 +26,7 @@ fs.close = function (){
 };
 
 var file = __dirname + "/file";
+var empty = __dirname + "/empty";
 var small = { highWaterMark: 5 };
 
 var tests = {
@@ -187,7 +188,7 @@ var tests = {
         })
         .close ();
   },
-  "open, close": function (done){
+  "open, seek, close": function (done){
     openCalls = 0;
     closeCalls = 0;
     br.open (file)
@@ -196,8 +197,10 @@ var tests = {
           assert.strictEqual (openCalls, 0);
           assert.strictEqual (readCalls, 0);
           assert.strictEqual (closeCalls, 0);
+          readCalls = 0;
           done ();
         })
+        .seek (2)
         .close ();
   },
   "asynchronous callback": function (done){
@@ -219,15 +222,16 @@ var tests = {
         .close ();
   },
   "cancel": function (done){
-    var r = br.open (file)
+    br.open (file)
         .on ("error", assert.ifError)
         .on ("close", function (){
           assert.ok (true);
           done ();
         })
         .read (1, function (bytesRead, buffer, cb){
+          var me = this;
           process.nextTick (function (){
-            r.cancel ();
+            me.cancel ();
           });
         })
         .read (1, function (bytesRead, buffer){
@@ -235,14 +239,74 @@ var tests = {
         })
         .close ();
   },
+  "cancel with error": function (done){
+    br.open (file)
+        .on ("error", function (error){
+          assert.ok (error);
+          
+          br.open (file)
+              .on ("error", function (error){
+                assert.ok (error);
+                done ();
+              })
+              .on ("close", function (){
+                assert.fail ();
+              })
+              .read (1, function (){
+                this.cancel (new Error ());
+              })
+              .close ();
+        })
+        .on ("close", function (){
+          assert.fail ();
+        })
+        .seek (10, function (){
+          this.cancel (new Error ());
+        })
+        .close ();
+  },
   "directory": function (done){
-    var r = br.open (".")
+    br.open (".")
         .on ("error", function (error){
           assert.ok (error);
           done ();
         })
-        .on ("close", function (){})
+        .on ("close", function (){
+          assert.fail ();
+        })
         .read (1, function (){})
+        .close ();
+  },
+  "eof": function (done){
+    readCalls = 0;
+    br.open (file)
+        .on ("error", assert.ifError)
+        .on ("close", done)
+        .seek (0, { end: true }, function (){
+          assert.strictEqual (this.size () - 1, this.tell ());
+        })
+        .seek (999, function (){
+          assert.ok (this.isEOF ());
+        })
+        .read (1, function (bytesRead, buffer){
+          assert.strictEqual (readCalls, 0);
+          assert.strictEqual (bytesRead, 0);
+          assert.strictEqual (buffer.length, 0);
+        })
+        .close ();
+  },
+  "empty": function (done){
+    br.open (empty)
+        .on ("error", assert.ifError)
+        .on ("close", done)
+        .seek (999, function (){
+          assert.ok (this.isEOF ());
+        })
+        .read (1, function (bytesRead, buffer){
+          assert.strictEqual (readCalls, 0);
+          assert.strictEqual (bytesRead, 0);
+          assert.strictEqual (buffer.length, 0);
+        })
         .close ();
   }
 };

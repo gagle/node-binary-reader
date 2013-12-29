@@ -1,3 +1,10 @@
+v0.1.2 (29 Dec 2013)
+  The pointer "this" is now available in the callback of "read()" and "seek()".
+  The file opening is now delayed until the first read() call.
+  An error can be passed to "cancel()" and it will be emitted back again through
+    the "error" event.
+  Minor improvements.
+
 v0.1.1 (12 Dec 2013)
   Removed dev "hex" dependency.
 

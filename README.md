@@ -9,7 +9,7 @@ binary-reader
 
 [![NPM installation](https://nodei.co/npm/binary-reader.png?mini=true)](https://nodei.co/npm/binary-reader "NodeICO Badge")
 
-The BinaryReader is a wrapper around the `fs.read()` function. It has an internal buffer that maintains the last chunk of data read from disk, so it minimizes the number of i/o calls. If the requested data is already in the buffer it doesn't perform any i/o call and the data is copied from the buffer. It also implements a fluent interface for your ease.
+This module is a wrapper around the `fs.read()` function. It has an internal buffer that maintains the last chunk of bytes read from disk, so it minimizes the number of I/O calls. If the requested bytes are already in the buffer it doesn't perform any I/O call and the bytes are copied directly from the internal buffer. It also implements a fluent interface for your ease, so it also tries to minimize the number of nested asynchronous calls.
 
 #### Documentation ####
 
@@ -29,19 +29,21 @@ The BinaryReader is a wrapper around the `fs.read()` function. It has an interna
 <a name="uses"></a>
 __What are its uses?__
 
-Anything that reads binary files. These are the benefits you'll win:
+Anything that needs to read big binary files to extract just a little portion of data.
+
+Benefits you get from it:
 
 - Read big binary files without caring about how to retrieve the data and without implementing your own internal cursor system.
-- Avoid the callback nesting. It uses a very lightweight asynchronous control flow library: [deferred-queue](https://github.com/gagle/node-deferred-queue).
+- Avoid the callback nesting. It uses a very lightweight and fast asynchronous series control flow library: [deferred-queue](https://github.com/gagle/node-deferred-queue).
 - Ease the error handling.
-- It is lazy! Delays the open and read calls until they are necessary, ie. `br.open(file).close()` does nothing.
+- It is lazy! Delays the open and read calls until they are necessary, ie. `br.open(file).seek(50).close()` does nothing.
 
 ---
 
 <a name="diagrams"></a>
 __How it works?__
 
-To make the things easier there are 5 cases depending on the buffer position and the range of the bytes that you want to read. These cases only apply if the buffer size is smaller than the file size, otherwise the file is stored into memory, so only one i/o call is done.
+To make the things easier there are 5 cases depending on the buffer position and the range of the bytes that you want to read. These cases only apply if the buffer size is smaller than the file size, otherwise the whole file is read into memory, so only one I/O call is done.
 
 Suppose a buffer size of 5 bytes (green background).  
 The pointer `p` is the cursor and it points to the first byte.  
@@ -49,7 +51,7 @@ The pointer `e` is the end and it points to the last byte.
 The `x` bytes are not in memory. They need to be read from disk.  
 The `y` bytes are already in memory. No need to read them again.
 
-For simplicity, the group of `x` bytes will be less than a buffer size so they can be read with a single i/o call. The binary reader takes cares of this and makes all the necessary calls to read all the `x` bytes.
+For the sake of simplicity, let's assume that the size of the group of `x` bytes is less than the buffer size. The binary reader takes cares of this and makes all the necessary calls to read all bytes.
 
 <p align="center">
   <img src="https://github.com/gagle/node-binary-reader/blob/master/diagram.png?raw=true"/>
@@ -60,7 +62,7 @@ For simplicity, the group of `x` bytes will be less than a buffer size so they c
 <a name="open"></a>
 ___module_.open(path[, options]) : Reader__
 
-Returns a new `Reader`. The reader is lazy so the file will be opened when with the first seek or read operation. 
+Returns a new `Reader`. The reader is lazy so the file will be opened with the first call to [seek()](#reader_seek) or [read()](#reader_read). 
 
 Options:
 
@@ -72,61 +74,76 @@ Options:
 <a name="Reader"></a>
 __Reader__
 
-The Reader uses a fluent interface. The way to go is to chain the operations synchronously and, after all, close the file. They will be executed in order and asynchronously. If any error occurs an `error` event is fired, the pending operations are cancelled and the file is closed automatically.
+The reader uses a fluent interface. The way to go is to chain the operations synchronously and, after all, close the file. They will be executed in series and asynchronously. If any error occurs an `error` event is fired, the pending tasks are cancelled and the file is automatically closed.
 
-The `read()` and `seek()` functions receive a callback. This callback is executed after the current operation and before the next one. If you do any job inside this callback and it returns an error you should stop and close the reader because the next operations will be executed automatically. You cannot use `close()` because it is enqueued and awaits its turn. To stop the queue execution immediately you must use the `cancel()` function. The reader will be closed automatically. For example:
+The `read()` and `seek()` functions receive a callback. This callback is executed when the current operation finishes and before the next one. If you need to stop executing the subsequent tasks because you've got an error or by any other reason, you must call to [cancel()](#reader_cancel). You cannot call to [close()](reader_close) because the task will be enqueued and what you need is to close the file immediately. For example:
 
 ```javascript
-var r = br.open (file)
+br.open (file)
     .on ("error", function (error){
       console.error (error);
     })
     .on ("close", function (){
-      //asyncWork() has failed so it cancels the reader and closes the file
-      //The second read is not executed
-      //Proceed with other tasks
-    })
-    .read (5, function (bytesRead, buffer, cb){
-      asyncWork (function (error){
-        if (error){
-          console.error (error);
-          r.cancel ();
-          //Do NOT call to cb()
-        }else{
-          //Proceed with the next read
-          cb ();
-        }
-      })
-    })
-    .read (10, function (){
       ...
+    })
+    .read (1, function (bytesRead, buffer){
+      //The subsequent tasks are not executed
+      this.cancel ();
+    })
+    .read (1, function (){
+      //This is never executed
     })
     .close ();
 ```
 
 __Methods__
 
-- [Reader#cancel() : undefined](#Reader_cancel)
-- [Reader#close() : Reader](#Reader_close)
-- [Reader#isEOF() : Boolean](#Reader_isEOF)
-- [Reader#read(bytes, callback) : Reader](#Reader_read)
-- [Reader#seek(position[, whence][, callback]) : Reader](#Reader_seek)
-- [Reader#size() : Number](#Reader_size)
-- [Reader#tell() : Number](#Reader_tell)
+- [Reader#cancel([error]) : undefined](#reader_cancel)
+- [Reader#close() : Reader](#reader_close)
+- [Reader#isEOF() : Boolean](#reader_iseof)
+- [Reader#read(bytes, callback) : Reader](#reader_read)
+- [Reader#seek(position[, whence][, callback]) : Reader](#reader_seek)
+- [Reader#size() : Number](#reader_size)
+- [Reader#tell() : Number](#reader_tell)
 
-<a name="Reader_cancel"></a>
-__Reader#cancel() : undefined__
+<a name="reader_cancel"></a>
+__Reader#cancel([error]) : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks. The file is closed automatically. Look at the example found in the [Reader](#Reader) description.
+Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks and the file is automatically closed. If you pass an error it will be emitted back again through the `error` event.
 
-<a name="Reader_close"></a>
+```javascript
+br.open (file)
+		.on ("error", function (error){
+			console.error (error);
+		})
+		.on ("close", function (){
+			...
+		})
+		.read (1, function (bytesRead, buffer, cb){
+		  var me = this;
+      asyncWork (function (error){
+        if (error){
+          me.cancel (error);
+        }else{
+          //Proceed with the next read
+          cb ();
+        }
+      }
+		})
+		.read (1, function (){
+			...
+		})
+		.close ();
+```
+
+<a name="reader_close"></a>
 __Reader#close() : Reader__
 
 Closes the reader.
 
 This operation is deferred, it's enqueued in the list of pending tasks.
 
-In the following example the close operation is executed after the read operation, so the reader first reads 1 byte and then closes.
+In the following example the close operation is executed after the read operation, so the reader first reads 1 byte and then closes the file.
 
 ```javascript
 br.open (file)
@@ -140,12 +157,12 @@ br.open (file)
     .close ();
 ```
 
-<a name="Reader_isEOF"></a>
+<a name="reader_iseof"></a>
 __Reader#isEOF() : Boolean__
 
-Checks whether the internal cursor has reached the end of the file. Subsequent reads returns 0 bytes. This operation is not deferred, it's executed immediately.
+Checks whether the internal cursor has reached the end of the file. Subsequent reads return an empty buffer. This operation is not deferred, it's executed immediately.
 
-In this example the cursor is moved to the last byte to read it, so now the cursor is at the end of the file.
+In this example the cursor is moved to the last byte but it's still not at the end, it will be after the read.
 
 ```javascript
 var r = br.open (file)
@@ -155,21 +172,21 @@ var r = br.open (file)
     .on ("close", function (){
       ...
     })
-    .seek (0, { end: true })
+    .seek (0, { end: true }, function (){
+      console.log (r.isEOF ()); //false
+    })
     .read (1, function (){
       console.log (r.isEOF ()); //true
     })
     .close ();
 ```
 
-<a name="Reader_read"></a>
+<a name="reader_read"></a>
 __Reader#read(bytes, callback) : Reader__
 
-Reads bytes and the cursor is automatically moved forward. The callback receives the number of bytes that has been read and the buffer with the raw data. The buffer is not a view, you can alter the content. 
+Reads data and the cursor is automatically moved forwards. The callback receives three arguments: the number of bytes that has been read, the buffer with the raw data and a callback that's used to allow asynchronous operations between tasks. The buffer is not a view, it's a new instance so you can modify the content without altering the internal buffer.
 
 This operation is deferred, it's enqueued in the list of pending tasks.
-
-The callback receives a third parameter, a callback that must be called if you call to any asynchronous code between deferred operations.
 
 For example:
 
@@ -182,13 +199,14 @@ br.open (file)
       ...
     }))
     .read (1, function (bytesRead, buffer, cb){
+      //Warning! If you declare the cb argument you must call it
       process.nextTick (cb);
     })
     .read (1, function (){ ... })
     .close ();
 ```
 
-<a name="Reader_seek"></a>
+<a name="reader_seek"></a>
 __Reader#seek(position[, whence][, callback]) : Reader__
 
 Moves the cursor along the file.
@@ -200,8 +218,8 @@ The `whence` parameters is used to tell the reader from where it must move the c
 For example, to move the cursor from the start:
 
 ```javascript
-seek(0, { start: true });
-seek(0);
+seek (0, { start: true });
+seek (0);
 ```
 
 By default the cursor it's referenced from the start of the file.
@@ -209,43 +227,43 @@ By default the cursor it's referenced from the start of the file.
 To move the cursor from the current position:
 
 ```javascript
-seek(5, { current: true })
-seek(-5, { current: true })
+seek (5, { current: true });
+seek (-5, { current: true });
 ```
 
-The cursor can be moved with positive and negative values.
+The cursor can be moved with positive and negative offsets.
 
 To move the cursor from the end:
 
 ```javascript
-seek(3, { end: true })
+seek (3, { end: true });
 ```
 
 This will move the cursor to the fourth byte from the end of the file.
 
-<a name="Reader_size"></a>
+<a name="reader_size"></a>
 __Reader#size() : Number__
 
-Returns the size of the file. This operation is not deferred, it executes immediately.
+Returns the size of the file. This operation is not deferred, it's executed immediately.
 
-<a name="Reader_tell"></a>
+<a name="reader_tell"></a>
 __Reader#tell() : Number__
 
-Returns the position of the cursor. This operation is not deferred, it executes immediately.
+Returns the position of the cursor. This operation is not deferred, it's executed immediately.
 
 ```javascript
-var r = require("./lib").open (__filename)
+br.open (file)
 		.on ("error", function (error){
 			console.error (error);
 		})
 		.on ("close", function (){
-			
+			...
 		})
 		.seek (0, { end: true }, function (){
-			console.log (r.tell () === r.size () - 1); //true
+			console.log (this.tell () === this.size () - 1); //true
 		})
 		.read (1, function (){
-			console.log (r.tell () === r.size ()); //true
+			console.log (this.tell () === this.size ()); //true
 		})
 		.close ();
 ```

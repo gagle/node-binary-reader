@@ -92,71 +92,70 @@ var file = "id3-v1.1.mp3";
 hex (fs.readFileSync (file));
 console.log ();
 
-var r = br.open (file);
+br.open (file)
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      console.log ("Title:    " + tags.title + "\n" +
+          "Artist:   " + tags.artist + "\n" +
+          "Album:    " + tags.album + "\n" +
+          "Year:     " + tags.year + "\n" +
+          "Comment:  " + tags.comment + "\n" +
+          "Track:    " + tags.track + "\n" +
+          "Genre:    " + tags.genre);
+    })
 
-r.on ("error", function (error){
-  console.error (error);
-})
-.on ("close", function (){
-  console.log ("Title:    " + tags.title + "\n" +
-      "Artist:   " + tags.artist + "\n" +
-      "Album:    " + tags.album + "\n" +
-      "Year:     " + tags.year + "\n" +
-      "Comment:  " + tags.comment + "\n" +
-      "Track:    " + tags.track + "\n" +
-      "Genre:    " + tags.genre);
-})
+    //ID3v1/v1.1 text data is ascii-encoded so it's safe to read 1 byte per
+    //chararacter
+    //ID3v1/v1.1 tags are found in the last 128 bytes
+    .seek (127, { end: true })
 
-//ID3v1/v1.1 text data is ascii-encoded so it's safe to read 1 byte per
-//chararacter
-//ID3v1/v1.1 tags are found in the last 128 bytes
-.seek (127, { end: true })
-
-//Check if TAG is present, if so, the music file has ID3v1/v1.1 tags
-.read (3, function (bytesRead, buffer){
-  if (buffer.toString () !== "TAG"){
-    //The file doesn't have ID3v1/v1.1 tags
-    console.log ("The file doesn't have ID3v1/v1.1 tags");
-    r.close ();
-  }else{
-    var isLastCharNullByte;
-    
-    //Title
-    r.read (30, function (bytesRead, buffer){
-      tags.title = buffer.toString ();
-    })
-    //Artist
-    .read (30, function (bytesRead, buffer){
-      tags.artist = buffer.toString ();
-    })
-    //Album
-    .read (30, function (bytesRead, buffer){
-      tags.album = buffer.toString ();
-    })
-    //Year
-    .read (4, function (bytesRead, buffer){
-      tags.year = buffer.toString ();
-    })
-    //Comment
-    .read (29, function (bytesRead, buffer){
-      tags.comment = buffer.toString ();
-      isLastCharNullByte = buffer[28] === 0;
-    })
-    //Track
-    .read (1, function (bytesRead, buffer){
-      if (isLastCharNullByte){
-        tags.track = buffer.toString ();
+    //Check if TAG is present, if so, the music file has ID3v1/v1.1 tags
+    .read (3, function (bytesRead, buffer){
+      if (buffer.toString () !== "TAG"){
+        //The file doesn't have ID3v1/v1.1 tags
+        console.log ("The file doesn't have ID3v1/v1.1 tags");
+        this.close ();
       }else{
-        tags.comment += buffer.toString ();
+        var isLastCharNullByte;
+        
+        //Title
+        this.read (30, function (bytesRead, buffer){
+          tags.title = buffer.toString ();
+        })
+        //Artist
+        .read (30, function (bytesRead, buffer){
+          tags.artist = buffer.toString ();
+        })
+        //Album
+        .read (30, function (bytesRead, buffer){
+          tags.album = buffer.toString ();
+        })
+        //Year
+        .read (4, function (bytesRead, buffer){
+          tags.year = buffer.toString ();
+        })
+        //Comment
+        .read (29, function (bytesRead, buffer){
+          tags.comment = buffer.toString ();
+          isLastCharNullByte = buffer[28] === 0;
+        })
+        //Track
+        .read (1, function (bytesRead, buffer){
+          if (isLastCharNullByte){
+            tags.track = buffer.toString ();
+          }else{
+            tags.comment += buffer.toString ();
+          }
+        })
+        //Genre
+        .read (1, function (bytesRead, buffer){
+          tags.genre = genres[buffer[0]];
+          
+          //We should have reached the end of the file
+          assert.ok (this.isEOF ());
+        })
+        .close ();
       }
-    })
-    //Genre
-    .read (1, function (bytesRead, buffer){
-      tags.genre = genres[buffer[0]];
-      
-      //We should have reached the end of the file
-      assert.ok (r.isEOF ());
-    })
-    .close ();
-  }
-});
+    });
