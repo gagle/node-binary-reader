@@ -109,7 +109,7 @@ __Methods__
 <a name="reader_cancel"></a>
 __Reader#cancel([error]) : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks and the file is automatically closed. If you pass an error it will be emitted back again through the `error` event.
+Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks and the file is automatically closed. If you pass an error, it will be emitted back again through the `error` event.
 
 ```javascript
 br.open (file)
