@@ -29,7 +29,7 @@ This module is a wrapper around the `fs.read()` function. It has an internal buf
 <a name="uses"></a>
 __What are its uses?__
 
-Anything that needs to read big binary files to extract just a little portion of data, and the length of this data it's found in a field that needs to be read first, e.g. file metadata readers: music, images, fonts, etc.
+Anything that needs to read big binary files to extract just a little portion of data, e.g. file metadata readers: music, images, fonts, etc.
 
 Benefits:
 
