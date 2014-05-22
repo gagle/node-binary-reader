@@ -67,7 +67,7 @@ Returns a new `Reader`. The reader is lazy so the file will be opened with the f
 Options:
 
 - __highWaterMark__ - _Number_  
-	The buffer size. Default is 16KB.
+  The buffer size. Default is 16KB.
 
 ---
 
@@ -132,20 +132,20 @@ Emitted when an error occurs.
 <a name="reader_cancel"></a>
 __Reader#cancel([error]) : undefined__
 
-Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks and the file is automatically closed. If you pass an error, it will be forwarded to the `error` event instead of the emitting a `close` event.
+Stops the reader immediately, that is, this operation is not deferred, it cancels all the pending tasks and the file is automatically closed. If you pass an error, it will be forwarded to the `error` event instead of emitting a `close` event.
 
 This function is mostly used when you need to execute some arbitrary code, you get an error and therefore you need to close the reader.
 
 ```javascript
 br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			...
-		})
-		.read (1, function (bytesRead, buffer, cb){
-		  var me = this;
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      ...
+    })
+    .read (1, function (bytesRead, buffer, cb){
+      var me = this;
       asyncFn (function (error){
         if (error){
           //The error is forwarded to the "error" event
@@ -156,11 +156,11 @@ br.open (file)
           cb ();
         }
       });
-		})
-		.read (1, function (){
-			...
-		})
-		.close ();
+    })
+    .read (1, function (){
+      ...
+    })
+    .close ();
 ```
 
 ---
@@ -293,18 +293,18 @@ Returns the position of the cursor. This operation is not deferred, it's execute
 
 ```javascript
 br.open (file)
-		.on ("error", function (error){
-			console.error (error);
-		})
-		.on ("close", function (){
-			...
-		})
-		.seek (0, { end: true }, function (){
-			console.log (this.tell () === this.size () - 1); //true
-		})
-		.read (1, function (){
-			console.log (this.tell () === this.size ()); //true
-			console.log (this.isEOF ()); //true
-		})
-		.close ();
+    .on ("error", function (error){
+      console.error (error);
+    })
+    .on ("close", function (){
+      ...
+    })
+    .seek (0, { end: true }, function (){
+      console.log (this.tell () === this.size () - 1); //true
+    })
+    .read (1, function (){
+      console.log (this.tell () === this.size ()); //true
+      console.log (this.isEOF ()); //true
+    })
+    .close ();
 ```
