@@ -42,6 +42,10 @@ var tests = {
           assert.strictEqual (bytesRead, 3);
           assert.deepEqual (buffer, new Buffer ([0, 1, 2]));
         })
+        .read (0, function (bytesRead, buffer){
+          assert.strictEqual (bytesRead, 0);
+          assert.deepEqual (buffer, new Buffer ([]));
+        })
         .close ();
   },
   "case 2": function (done){
@@ -243,7 +247,7 @@ var tests = {
     br.open (file)
         .on ("error", function (error){
           assert.ok (error);
-          
+
           br.open (file)
               .on ("error", function (error){
                 assert.ok (error);
